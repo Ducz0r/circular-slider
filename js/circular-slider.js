@@ -1,6 +1,7 @@
 (function(global) {
   'use strict';
 
+  // Constructor
   function CircularSlider(
     container,
     color,
@@ -17,13 +18,18 @@
     this.valueChanged = valueChanged || undefined;
   }
 
+  // Main drawing function
   CircularSlider.prototype.draw = function() {
-    // TODO
-    var div = document.createElement('div');
-    div.style.width = '100px';
-    div.style.height = '100px';
-    div.style.background = this.color;
-    this.container.appendChild(div);
+    var svg = createMainSvgContainer(this.container);
+  }
+
+  function createMainSvgContainer(parent) {
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '100%');
+    svg.setAttribute('class', 'circular-slider');
+    parent.appendChild(svg);
+    return svg;
   }
 
   global.CircularSlider = CircularSlider;
