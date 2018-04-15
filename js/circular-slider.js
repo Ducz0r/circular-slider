@@ -22,15 +22,14 @@
     this.opts.step = step || 5; // Should not be 0
     this.opts.radius = radius || 100; // Should not be 0
     this.opts.valueChanged = valueChanged || undefined;
-    this.opts.initValue = initValue || 25;
+    this.opts.initValue = initValue || 0;
     this.calcs = {}; // Internal calculations for drawing
     this.elements = {}; // References to elements
   }
 
-  // Main drawing function
   CircularSlider.prototype.draw = function() {
     calculateDrawingData.call(this);
-    var svg = drawSvg.call(this);
+    drawSvg.call(this);
   }
 
   function calculateDrawingData() {
@@ -55,31 +54,42 @@
     sliderBackground.setAttribute('r', this.opts.radius);
     sliderBackground.setAttribute('class', 'slider-bg');
     svg.appendChild(sliderBackground);
-    this.elements.sliderBackground = sliderBackground;
+    this.elements.background = sliderBackground;
 
     var sliderOverlay = document.createElementNS(constants.SVG_NAMESPACE, 'path');
     sliderOverlay.setAttribute('stroke', this.opts.color);
     sliderOverlay.setAttribute('class', 'slider-overlay');
     svg.appendChild(sliderOverlay);
-    this.elements.sliderOverlay = sliderOverlay;
-    updateSliderOverlay.call(this);
+    this.elements.overlay = sliderOverlay;
 
-    return svg;
+    var sliderBtn = document.createElementNS(constants.SVG_NAMESPACE, 'circle');
+    sliderBtn.setAttribute('r', 16);
+    sliderBtn.setAttribute('class', 'slider-btn');
+    svg.appendChild(sliderBtn);
+    this.elements.button = sliderBtn;
+
+    updateDrawing.call(this);
   }
 
-  function updateSliderOverlay() {
+  function updateDrawing() {
     var pos = [
       this.calcs.centerX + Math.sin(this.calcs.angleStart) * this.opts.radius,
       this.calcs.centerY - Math.cos(this.calcs.angleStart) * this.opts.radius,
       this.calcs.centerX + Math.sin(this.calcs.angleEnd) * this.opts.radius,
       this.calcs.centerY - Math.cos(this.calcs.angleEnd) * this.opts.radius
     ];
+
+    // Update overlay
     var arcSweep = this.calcs.angleEnd - this.calcs.angleStart <= Math.PI ? 0 : 1;
     var d = [
       'M', pos[0], pos[1],
       'A', this.opts.radius, this.opts.radius, 0, arcSweep, 1, pos[2], pos[3]
     ].join(' ');
-    this.elements.sliderOverlay.setAttribute('d', d);
+    this.elements.overlay.setAttribute('d', d);
+
+    // Update button
+    this.elements.button.setAttribute('cx', pos[2]);
+    this.elements.button.setAttribute('cy', pos[3]);
   }
 
   global.CircularSlider = CircularSlider;

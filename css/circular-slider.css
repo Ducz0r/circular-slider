@@ -4,8 +4,16 @@
   stroke-width: 26;
   fill: none;
 }
+
 .circular-slider .slider-overlay {
   stroke-width: 26;
   stroke-opacity: 0.6;
   fill: none;
+}
+
+.circular-slider .slider-btn {
+  stroke: #bdbdbd;
+  stroke-width: 2;
+  fill: #fff;
+  cursor: pointer;
 }
