@@ -1,3 +1,6 @@
-.border-rect {
-  fill: #d1d1d2;
+.circular-slider .slider-bg {
+  stroke: #d1d1d2;
+  stroke-dasharray: 8,3;
+  stroke-width: 26;
+  fill: none;
 }
