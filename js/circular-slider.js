@@ -52,12 +52,14 @@
     this.opts.container.appendChild(svg);
     this.elements.svg = svg;
 
-    var sliderBackground = document.createElementNS(constants.SVG_NAMESPACE, 'path');
+    // 'd' parameter, used by 2 paths for the slider
     var d = [
       'M', this.calcs.centerX, this.calcs.centerY - this.opts.radius,
       'a', this.opts.radius, this.opts.radius, 0, 1, 1, 0, 2 * this.opts.radius,
       'a', this.opts.radius, this.opts.radius, 0, 1, 1, 0, -2 * this.opts.radius
     ].join(' ');
+
+    var sliderBackground = document.createElementNS(constants.SVG_NAMESPACE, 'path');
     sliderBackground.setAttribute('d', d);
     sliderBackground.setAttribute('class', 'slider-bg');
     svg.appendChild(sliderBackground);
@@ -68,6 +70,12 @@
     sliderOverlay.setAttribute('class', 'slider-overlay');
     svg.appendChild(sliderOverlay);
     this.elements.overlay = sliderOverlay;
+
+    var sliderClickOverlay = document.createElementNS(constants.SVG_NAMESPACE, 'path');
+    sliderClickOverlay.setAttribute('d', d);
+    sliderClickOverlay.setAttribute('class', 'slider-click-overlay');
+    svg.appendChild(sliderClickOverlay);
+    this.elements.clickOverlay = sliderClickOverlay;
 
     var sliderBtn = document.createElementNS(constants.SVG_NAMESPACE, 'circle');
     sliderBtn.setAttribute('r', 16);
@@ -90,8 +98,7 @@
       updateDrawing.call(self);
     }
 
-    this.elements.background.addEventListener('click', clickHandler);
-    this.elements.overlay.addEventListener('click', clickHandler);
+    this.elements.clickOverlay.addEventListener('click', clickHandler);
   }
 
   function calculateNewAngle(x, y) {

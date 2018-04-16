@@ -11,6 +11,14 @@
   fill: none;
 }
 
+.circular-slider .slider-click-overlay {
+  stroke: #ffffff00;
+  stroke-width: 26;
+  stroke-opacity: 1;
+  fill: none;
+  cursor: pointer;
+}
+
 .circular-slider .slider-btn {
   stroke: #bdbdbd;
   stroke-width: 2;
