@@ -90,9 +90,24 @@
     var self = this;
 
     var clickHandler = function(event) {
+      event.preventDefault(); // Cancel dragging on mobile
+
+      var src;
+      if (event instanceof TouchEvent) {
+        var touches = event.changedTouches;
+        for (var i = 0; i < touches.length; i++) {
+          var touch = touches[i];
+          if (touch.target === self.elements.button) {
+            src = touch;
+          }
+        }
+      } else {
+        src = event;
+      }
+
       var svgRect = self.elements.svg.getBoundingClientRect();
-      var x = event.pageX - svgRect.x;
-      var y = event.pageY + svgRect.y;
+      var x = src.pageX - svgRect.x;
+      var y = src.pageY + svgRect.y;
 
       calculateNewAngle.call(self, x, y);
       updateDrawing.call(self);
@@ -111,8 +126,22 @@
       document.body.removeEventListener('mouseleave', stopDragHandler);
     }
 
+    var startDragMobileHandler = function(event) {
+      document.body.addEventListener('touchmove', clickHandler, { passive: false });
+      document.body.addEventListener('touchend', stopDragMobileHandler);
+      document.body.addEventListener('touchcancel', stopDragMobileHandler);
+      clickHandler(event);
+    }
+
+    var stopDragMobileHandler = function(event) {
+      document.body.removeEventListener('touchmove', clickHandler);
+      document.body.removeEventListener('touchend', stopDragMobileHandler);
+      document.body.removeEventListener('touchcancel', stopDragMobileHandler);
+    }
+
     this.elements.clickOverlay.addEventListener('click', clickHandler);
     this.elements.button.addEventListener('mousedown', startDragHandler);
+    this.elements.button.addEventListener('touchstart', startDragMobileHandler);
   }
 
   function calculateNewAngle(x, y) {
