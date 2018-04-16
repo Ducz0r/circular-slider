@@ -45,7 +45,22 @@
   }
 
   function drawSvg() {
-    var svg = document.createElementNS(constants.SVG_NAMESPACE, 'svg');
+    // Check if SVG object already exists on container, in this case, reuse it
+    var svg;
+    var children = this.opts.container.children;
+    for (var i = 0; i < children.length; i++) {
+      if (children[i].tagName === 'svg') {
+        var classes = children[i].classList;
+        for (var j = 0; j < classes.length; j++) {
+          if (classes[j] === 'circular-slider') {
+            svg = children[i];
+          }
+        }
+      }
+    }
+    if (svg === undefined) {
+      var svg = document.createElementNS(constants.SVG_NAMESPACE, 'svg');
+    }
     svg.setAttribute('width', '100%');
     svg.setAttribute('height', '100%');
     svg.setAttribute('class', 'circular-slider');
@@ -106,8 +121,8 @@
       }
 
       var svgRect = self.elements.svg.getBoundingClientRect();
-      var x = src.pageX - (window.scrollX + svgRect.x);
-      var y = src.pageY + (window.scrollY + svgRect.y);
+      var x = src.pageX - (window.scrollX + svgRect.left);
+      var y = src.pageY + (window.scrollY + svgRect.top);
 
       calculateNewAngle.call(self, x, y);
       updateDrawing.call(self);
@@ -179,7 +194,7 @@
 
     // Correction if max. limit (full circle) reached
     if (this.value === this.opts.limits[1]) {
-      angleEnd = 2 * Math.PI - 0.05;
+      angleEnd = 2 * Math.PI - 0.00001;
     }
 
     var pos = [
