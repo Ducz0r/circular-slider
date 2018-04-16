@@ -31,12 +31,12 @@
   }
 
   CircularSlider.prototype.draw = function() {
-    calculateDrawingData.call(this);
+    initializeDrawingData.call(this);
     drawSvg.call(this);
     initHandlers.call(this);
   }
 
-  function calculateDrawingData() {
+  function initializeDrawingData() {
     var opts = this.opts;
     this.calcs.centerX = opts.container.offsetWidth / 2;
     this.calcs.centerY = opts.container.offsetHeight / 2;
@@ -98,7 +98,21 @@
       updateDrawing.call(self);
     }
 
+    var startDragHandler = function(event) {
+      document.body.addEventListener('mousemove', clickHandler);
+      document.body.addEventListener('mouseup', stopDragHandler);
+      document.body.addEventListener('mouseleave', stopDragHandler);
+      clickHandler(event);
+    }
+
+    var stopDragHandler = function(event) {
+      document.body.removeEventListener('mousemove', clickHandler);
+      document.body.removeEventListener('mouseup', stopDragHandler);
+      document.body.removeEventListener('mouseleave', stopDragHandler);
+    }
+
     this.elements.clickOverlay.addEventListener('click', clickHandler);
+    this.elements.button.addEventListener('mousedown', startDragHandler);
   }
 
   function calculateNewAngle(x, y) {
