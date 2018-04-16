@@ -23,6 +23,9 @@
     this.opts.radius = radius || 100; // Should not be 0
     this.opts.valueChanged = valueChanged || undefined;
     this.opts.initValue = initValue || 0;
+
+    this.value = this.opts.initValue;
+
     this.calcs = {}; // Internal calculations for drawing
     this.elements = {}; // References to elements
   }
@@ -30,14 +33,15 @@
   CircularSlider.prototype.draw = function() {
     calculateDrawingData.call(this);
     drawSvg.call(this);
+    initHandlers.call(this);
   }
 
   function calculateDrawingData() {
     var opts = this.opts;
     this.calcs.centerX = opts.container.offsetWidth / 2;
     this.calcs.centerY = opts.container.offsetHeight / 2;
-    this.calcs.angleStart = (opts.limits[0] * 2 * Math.PI) / opts.limits[1];
-    this.calcs.angleEnd = (opts.initValue * 2 * Math.PI) / opts.limits[1];
+    this.calcs.angleLimitMin = (opts.limits[0] * 2 * Math.PI) / opts.limits[1];
+    this.calcs.angleEnd = (this.value * 2 * Math.PI) / opts.limits[1];
   }
 
   function drawSvg() {
@@ -48,10 +52,13 @@
     this.opts.container.appendChild(svg);
     this.elements.svg = svg;
 
-    var sliderBackground = document.createElementNS(constants.SVG_NAMESPACE, 'circle');
-    sliderBackground.setAttribute('cx', this.calcs.centerX);
-    sliderBackground.setAttribute('cy', this.calcs.centerY);
-    sliderBackground.setAttribute('r', this.opts.radius);
+    var sliderBackground = document.createElementNS(constants.SVG_NAMESPACE, 'path');
+    var d = [
+      'M', this.calcs.centerX, this.calcs.centerY - this.opts.radius,
+      'a', this.opts.radius, this.opts.radius, 0, 1, 1, 0, 2 * this.opts.radius,
+      'a', this.opts.radius, this.opts.radius, 0, 1, 1, 0, -2 * this.opts.radius
+    ].join(' ');
+    sliderBackground.setAttribute('d', d);
     sliderBackground.setAttribute('class', 'slider-bg');
     svg.appendChild(sliderBackground);
     this.elements.background = sliderBackground;
@@ -71,16 +78,69 @@
     updateDrawing.call(this);
   }
 
+  function initHandlers() {
+    var self = this;
+
+    var clickHandler = function(event) {
+      var svgRect = self.elements.svg.getBoundingClientRect();
+      var x = event.pageX - svgRect.x;
+      var y = event.pageY + svgRect.y;
+
+      calculateNewAngle.call(self, x, y);
+      updateDrawing.call(self);
+    }
+
+    this.elements.background.addEventListener('click', clickHandler);
+    this.elements.overlay.addEventListener('click', clickHandler);
+  }
+
+  function calculateNewAngle(x, y) {
+    // Use law of cosines to calculate raw angle
+    var aSquared = Math.pow(x - this.calcs.centerX, 2) + Math.pow(y - this.calcs.centerY, 2);
+    var b = this.opts.radius;
+    var cSquared = Math.pow(x - this.calcs.centerX, 2) + Math.pow(y - this.calcs.centerY + this.opts.radius, 2);
+    var newAngle = Math.acos((aSquared + b * b - cSquared) / (2 * Math.sqrt(aSquared) * b));
+    newAngle = x < this.calcs.centerX ? (2 * Math.PI - newAngle) : newAngle; // Correction
+
+    var newValue;
+    if (newAngle < this.calcs.angleLimitMin) {
+      // Skip further calculations if angle is less than min. limit
+      newValue = this.opts.limits[0];
+      newAngle = this.calcs.angleLimitMin;
+    } else {
+      // Calculate new value
+      var newValue = (newAngle * this.opts.limits[1]) / (2 * Math.PI);
+
+      // Fix new value to steps, also fix new angle
+      var newValue = Math.round(newValue / this.opts.step) * this.opts.step;
+      var newAngle = (newValue * 2 * Math.PI) / this.opts.limits[1];
+    }
+
+    // Finally, set new value
+    this.value = newValue;
+    this.calcs.angleEnd = newAngle;
+    if (this.opts.valueChanged !== undefined) {
+      this.opts.valueChanged(newValue);
+    }
+  }
+
   function updateDrawing() {
+    var angleEnd = this.calcs.angleEnd;
+
+    // Correction if max. limit (full circle) reached
+    if (this.value === this.opts.limits[1]) {
+      angleEnd = 2 * Math.PI - 0.05;
+    }
+
     var pos = [
-      this.calcs.centerX + Math.sin(this.calcs.angleStart) * this.opts.radius,
-      this.calcs.centerY - Math.cos(this.calcs.angleStart) * this.opts.radius,
-      this.calcs.centerX + Math.sin(this.calcs.angleEnd) * this.opts.radius,
-      this.calcs.centerY - Math.cos(this.calcs.angleEnd) * this.opts.radius
+      this.calcs.centerX,
+      this.calcs.centerY - this.opts.radius,
+      this.calcs.centerX + Math.sin(angleEnd) * this.opts.radius,
+      this.calcs.centerY - Math.cos(angleEnd) * this.opts.radius
     ];
 
     // Update overlay
-    var arcSweep = this.calcs.angleEnd - this.calcs.angleStart <= Math.PI ? 0 : 1;
+    var arcSweep = angleEnd <= Math.PI ? 0 : 1;
     var d = [
       'M', pos[0], pos[1],
       'A', this.opts.radius, this.opts.radius, 0, arcSweep, 1, pos[2], pos[3]
