@@ -22,6 +22,6 @@ body {
 }
 
 .values {
-  left: 0;
+  float: left;
   position: fixed;
 }
