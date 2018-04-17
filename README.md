@@ -2,7 +2,8 @@
 
 ## How to use
 
-1. Include the CSS and JS files in your HTML:
+### 1. Include the CSS and JS files in your HTML
+
 ```html
 <html>
   <head>
@@ -16,7 +17,7 @@
 </html>
 ```
 
-2. Initialize the JS slider with the provided options:
+### 2. Initialize the JS slider with the given options
 
 ```js
 var slider = new CircularSlider({
@@ -32,8 +33,20 @@ var slider = new CircularSlider({
 });
 ```
 
-3. Draw the slider:
+### 3. Draw the slider
 
 ```js
+slider.draw();
+```
+
+## Customizing appearance
+
+To customize the slider, you can use normal CSS properties (see `circular-slider.css` to see what are the possibilities).
+
+The only part of the slider that cannot be restyled using pure CSS is the radius of the slider's button, but you can modify this value using JavaScript like so:
+
+```js
+var slider = new CircularSlider(...);
+slider.style.buttonRadius = <new radius>;
 slider.draw();
 ```
