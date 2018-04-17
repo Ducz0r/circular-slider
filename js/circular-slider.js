@@ -114,7 +114,7 @@
 
       var svgRect = self.elements.svg.getBoundingClientRect();
       var x = src.pageX - (window.scrollX + svgRect.left);
-      var y = src.pageY + (window.scrollY + svgRect.top);
+      var y = src.pageY - (window.scrollY + svgRect.top);
 
       calculateNewAngle.call(self, x, y);
       updateDrawing.call(self);
