@@ -6,7 +6,7 @@
 
   var slider_opts = [
     { container: cl, color: '#653f76', limits: [0, 1100], step: 5, radius: 300, initValue: 750 },
-    { container: cl, color: '#007ac2', limits: [0, 1000], step: 5, radius: 250, initValue: 650 },
+    { container: cl, color: '#007ac2', limits: [200, 1000], step: 5, radius: 250, initValue: 650 },
     { container: cl, color: '#00a000', limits: [0, 1050], step: 5, radius: 200, initValue: 500 },
     { container: cl, color: '#ff7818', limits: [0, 1100], step: 5, radius: 150, initValue: 800 },
     { container: cl, color: '#ff3638', limits: [0, 900], step: 5, radius: 100, initValue: 200 }
