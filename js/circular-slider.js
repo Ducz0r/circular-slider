@@ -6,23 +6,15 @@
   };
 
   // Constructor
-  function CircularSlider(
-    container,
-    color,
-    limits,
-    step,
-    radius,
-    valueChanged,
-    initValue
-  ) {
+  function CircularSlider(opts) {
     this.opts = {};
-    this.opts.container = container || document.body;
-    this.opts.color = color || '#0000FF';
-    this.opts.limits = limits || [0, 100];
-    this.opts.step = step || 5; // Should not be 0
-    this.opts.radius = radius || 100; // Should not be 0
-    this.opts.valueChanged = valueChanged || undefined;
-    this.opts.initValue = initValue || 0;
+    this.opts.container = opts.container || document.body;
+    this.opts.color = opts.color || '#0000FF';
+    this.opts.limits = opts.limits || [0, 100];
+    this.opts.step = opts.step || 5; // Should not be 0
+    this.opts.radius = opts.radius || 100; // Should not be 0
+    this.opts.valueChanged = opts.valueChanged || undefined;
+    this.opts.initValue = opts.initValue || 0;
 
     this.value = this.opts.initValue;
 
