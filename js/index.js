@@ -16,13 +16,23 @@ for (var i = 0; i < 2; i++) {
   for (var j = 0; j < slider_opts.length; j++) {
     var opts = slider_opts[j];
     opts.container = container;
-    var displayVal = document.createElement('li');
-    displayVal.innerHTML = opts.initValue + '$';
-    opts.container.children[0].appendChild(displayVal);
+
+    var listItem = document.createElement('li');
+    opts.container.children[0].appendChild(listItem);
+
+    var box = document.createElement('div');
+    box.setAttribute('class', 'box');
+    box.style.background = opts.color;
+    listItem.appendChild(box);
+
+    var text = document.createElement('span');
+    text.innerHTML = opts.initValue + '$';
+    listItem.appendChild(text);
+
     opts.valueChanged = (function() {
-      var displayVal2 = displayVal;
+      var text2 = text;
       return function(newVal) {
-        displayVal2.innerHTML = newVal + '$';
+        text2.innerHTML = newVal + '$';
       }
     })();
 

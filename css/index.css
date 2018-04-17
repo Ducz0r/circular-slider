@@ -25,3 +25,10 @@ body {
   float: left;
   position: fixed;
 }
+
+.values li .box {
+  display: inline-block;
+  width: 30px;
+  height: 10px;
+  margin-right: 5px;
+}
