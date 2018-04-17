@@ -20,12 +20,14 @@
 
     this.calcs = {}; // Internal calculations for drawing
     this.elements = {}; // References to elements
+    this.style = {}; // Slider parameters that can't be styled using CSS
+    this.style.buttonRadius = 16;
   }
 
   CircularSlider.prototype.draw = function() {
     initializeDrawingData.call(this);
     drawSvg.call(this);
-    initHandlers.call(this);
+    initializeHandlers.call(this);
   }
 
   function initializeDrawingData() {
@@ -33,7 +35,7 @@
     this.calcs.centerX = opts.container.offsetWidth / 2;
     this.calcs.centerY = opts.container.offsetHeight / 2;
     this.calcs.angleLimitMin = (opts.limits[0] * 2 * Math.PI) / opts.limits[1];
-    this.calcs.angleEnd = (this.value * 2 * Math.PI) / opts.limits[1];
+    this.calcs.angle = (this.value * 2 * Math.PI) / opts.limits[1];
   }
 
   function drawSvg() {
@@ -51,13 +53,21 @@
       }
     }
     if (svg === undefined) {
-      var svg = document.createElementNS(constants.SVG_NAMESPACE, 'svg');
+      svg = document.createElementNS(constants.SVG_NAMESPACE, 'svg');
+      svg.setAttribute('class', 'circular-slider');
+      this.opts.container.appendChild(svg);
     }
-    svg.setAttribute('width', '100%');
-    svg.setAttribute('height', '100%');
-    svg.setAttribute('class', 'circular-slider');
-    this.opts.container.appendChild(svg);
     this.elements.svg = svg;
+
+    function drawElementNS(tagName, attributes, className) {
+      var element = document.createElementNS(constants.SVG_NAMESPACE, tagName);
+      for (var key in attributes) {
+        element.setAttribute(key, attributes[key]);
+      }
+      element.setAttribute('class', className);
+      svg.appendChild(element);
+      return element;
+    }
 
     // 'd' parameter, used by 2 paths for the slider
     var d = [
@@ -66,34 +76,19 @@
       'a', this.opts.radius, this.opts.radius, 0, 1, 1, 0, -2 * this.opts.radius
     ].join(' ');
 
-    var sliderBackground = document.createElementNS(constants.SVG_NAMESPACE, 'path');
-    sliderBackground.setAttribute('d', d);
-    sliderBackground.setAttribute('class', 'slider-bg');
-    svg.appendChild(sliderBackground);
-    this.elements.background = sliderBackground;
+    this.elements.background = drawElementNS('path', { d: d }, 'slider-bg');
+    this.elements.overlay =
+      drawElementNS('path', { stroke: this.opts.color }, 'slider-overlay');
+    this.elements.clickOverlay =
+      drawElementNS('path', { d: d }, 'slider-click-overlay');
+    this.elements.button =
+      drawElementNS('circle', { r: this.style.buttonRadius }, 'slider-btn');
 
-    var sliderOverlay = document.createElementNS(constants.SVG_NAMESPACE, 'path');
-    sliderOverlay.setAttribute('stroke', this.opts.color);
-    sliderOverlay.setAttribute('class', 'slider-overlay');
-    svg.appendChild(sliderOverlay);
-    this.elements.overlay = sliderOverlay;
-
-    var sliderClickOverlay = document.createElementNS(constants.SVG_NAMESPACE, 'path');
-    sliderClickOverlay.setAttribute('d', d);
-    sliderClickOverlay.setAttribute('class', 'slider-click-overlay');
-    svg.appendChild(sliderClickOverlay);
-    this.elements.clickOverlay = sliderClickOverlay;
-
-    var sliderBtn = document.createElementNS(constants.SVG_NAMESPACE, 'circle');
-    sliderBtn.setAttribute('r', 16);
-    sliderBtn.setAttribute('class', 'slider-btn');
-    svg.appendChild(sliderBtn);
-    this.elements.button = sliderBtn;
-
+    // Call the shared function to update SVG
     updateDrawing.call(this);
   }
 
-  function initHandlers() {
+  function initializeHandlers() {
     var self = this;
 
     var clickHandler = function(event) {
@@ -127,20 +122,18 @@
       document.body.addEventListener('mouseleave', stopDragHandler);
       clickHandler(event);
     }
-
     var stopDragHandler = function(event) {
       document.body.removeEventListener('mousemove', clickHandler);
       document.body.removeEventListener('mouseup', stopDragHandler);
       document.body.removeEventListener('mouseleave', stopDragHandler);
     }
-
     var startDragMobileHandler = function(event) {
-      document.body.addEventListener('touchmove', clickHandler, { passive: false });
+      document.body.addEventListener('touchmove', clickHandler,
+                                     { passive: false });
       document.body.addEventListener('touchend', stopDragMobileHandler);
       document.body.addEventListener('touchcancel', stopDragMobileHandler);
       clickHandler(event);
     }
-
     var stopDragMobileHandler = function(event) {
       document.body.removeEventListener('touchmove', clickHandler);
       document.body.removeEventListener('touchend', stopDragMobileHandler);
@@ -148,18 +141,23 @@
     }
 
     this.elements.clickOverlay.addEventListener('mousedown', startDragHandler);
-    this.elements.clickOverlay.addEventListener('touchstart', startDragMobileHandler);
+    this.elements.clickOverlay.addEventListener('touchstart',
+                                                startDragMobileHandler);
     this.elements.button.addEventListener('mousedown', startDragHandler);
     this.elements.button.addEventListener('touchstart', startDragMobileHandler);
   }
 
   function calculateNewAngle(x, y) {
     // Use law of cosines to calculate raw angle
-    var aSquared = Math.pow(x - this.calcs.centerX, 2) + Math.pow(y - this.calcs.centerY, 2);
+    var aSquared = Math.pow(x - this.calcs.centerX, 2) +
+                   Math.pow(y - this.calcs.centerY, 2);
     var b = this.opts.radius;
-    var cSquared = Math.pow(x - this.calcs.centerX, 2) + Math.pow(y - this.calcs.centerY + this.opts.radius, 2);
-    var newAngle = Math.acos((aSquared + b * b - cSquared) / (2 * Math.sqrt(aSquared) * b));
-    newAngle = x < this.calcs.centerX ? (2 * Math.PI - newAngle) : newAngle; // Correction
+    var cSquared = Math.pow(x - this.calcs.centerX, 2) +
+                   Math.pow(y - this.calcs.centerY + this.opts.radius, 2);
+    var newAngle = Math.acos((aSquared + b * b - cSquared) /
+                   (2 * Math.sqrt(aSquared) * b));
+    // Correction
+    newAngle = x < this.calcs.centerX ? (2 * Math.PI - newAngle) : newAngle;
 
     var newValue;
     if (newAngle < this.calcs.angleLimitMin) {
@@ -177,38 +175,40 @@
 
     // Finally, set new value
     this.value = newValue;
-    this.calcs.angleEnd = newAngle;
+    this.calcs.angle = newAngle;
     if (this.opts.valueChanged !== undefined) {
       this.opts.valueChanged(newValue);
     }
   }
 
   function updateDrawing() {
-    var angleEnd = this.calcs.angleEnd;
+    var angle = this.calcs.angle;
 
     // Correction if max. limit (full circle) reached
     if (this.value === this.opts.limits[1]) {
-      angleEnd = 2 * Math.PI - 0.00001;
+      angle = 2 * Math.PI - 0.00001;
     }
 
-    var pos = [
-      this.calcs.centerX,
-      this.calcs.centerY - this.opts.radius,
-      this.calcs.centerX + Math.sin(angleEnd) * this.opts.radius,
-      this.calcs.centerY - Math.cos(angleEnd) * this.opts.radius
+    var points = [
+      { x: this.calcs.centerX, y: this.calcs.centerY - this.opts.radius },
+      {
+        x: this.calcs.centerX + Math.sin(angle) * this.opts.radius,
+        y: this.calcs.centerY - Math.cos(angle) * this.opts.radius
+      }
     ];
 
     // Update overlay
-    var arcSweep = angleEnd <= Math.PI ? 0 : 1;
+    var arcSweep = angle <= Math.PI ? 0 : 1;
     var d = [
-      'M', pos[0], pos[1],
-      'A', this.opts.radius, this.opts.radius, 0, arcSweep, 1, pos[2], pos[3]
+      'M', points[0].x, points[0].y,
+      'A', this.opts.radius, this.opts.radius,
+           0, arcSweep, 1, points[1].x, points[1].y
     ].join(' ');
     this.elements.overlay.setAttribute('d', d);
 
     // Update button
-    this.elements.button.setAttribute('cx', pos[2]);
-    this.elements.button.setAttribute('cy', pos[3]);
+    this.elements.button.setAttribute('cx', points[1].x);
+    this.elements.button.setAttribute('cy', points[1].y);
   }
 
   global.CircularSlider = CircularSlider;
