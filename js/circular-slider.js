@@ -104,7 +104,8 @@
         var touches = event.changedTouches;
         for (var i = 0; i < touches.length; i++) {
           var touch = touches[i];
-          if (touch.target === self.elements.button) {
+          if (touch.target === self.elements.button ||
+              touch.target === self.elements.clickOverlay) {
             src = touch;
           }
         }
@@ -146,7 +147,8 @@
       document.body.removeEventListener('touchcancel', stopDragMobileHandler);
     }
 
-    this.elements.clickOverlay.addEventListener('click', clickHandler);
+    this.elements.clickOverlay.addEventListener('mousedown', startDragHandler);
+    this.elements.clickOverlay.addEventListener('touchstart', startDragMobileHandler);
     this.elements.button.addEventListener('mousedown', startDragHandler);
     this.elements.button.addEventListener('touchstart', startDragMobileHandler);
   }
