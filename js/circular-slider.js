@@ -2,7 +2,8 @@
   'use strict';
 
   var constants = {
-    SVG_NAMESPACE: 'http://www.w3.org/2000/svg'
+    SVG_NAMESPACE: 'http://www.w3.org/2000/svg',
+    THROTTLING_DELAY: 50
   };
 
   // Constructor
@@ -90,8 +91,15 @@
 
   function initializeHandlers() {
     var self = this;
+    var lastDragHandlerCall = 0; // Throttling for better performance
 
-    var clickHandler = function(event) {
+    var dragHandler = function(event) {
+      var now = (new Date).getTime();
+      if (now - lastDragHandlerCall < constants.THROTTLING_DELAY) {
+        return;
+      }
+      lastDragHandlerCall = now;
+
       event.preventDefault(); // Cancel dragging on mobile
 
       var src;
@@ -117,25 +125,25 @@
     }
 
     var startDragHandler = function(event) {
-      document.body.addEventListener('mousemove', clickHandler);
+      document.body.addEventListener('mousemove', dragHandler);
       document.body.addEventListener('mouseup', stopDragHandler);
       document.body.addEventListener('mouseleave', stopDragHandler);
-      clickHandler(event);
+      dragHandler(event);
     }
     var stopDragHandler = function(event) {
-      document.body.removeEventListener('mousemove', clickHandler);
+      document.body.removeEventListener('mousemove', dragHandler);
       document.body.removeEventListener('mouseup', stopDragHandler);
       document.body.removeEventListener('mouseleave', stopDragHandler);
     }
     var startDragMobileHandler = function(event) {
-      document.body.addEventListener('touchmove', clickHandler,
+      document.body.addEventListener('touchmove', dragHandler,
                                      { passive: false });
       document.body.addEventListener('touchend', stopDragMobileHandler);
       document.body.addEventListener('touchcancel', stopDragMobileHandler);
-      clickHandler(event);
+      dragHandler(event);
     }
     var stopDragMobileHandler = function(event) {
-      document.body.removeEventListener('touchmove', clickHandler);
+      document.body.removeEventListener('touchmove', dragHandler);
       document.body.removeEventListener('touchend', stopDragMobileHandler);
       document.body.removeEventListener('touchcancel', stopDragMobileHandler);
     }
