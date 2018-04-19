@@ -1,4 +1,4 @@
-# JavaScript Circular SLider
+# JavaScript Circular Slider
 
 ## How to use
 
@@ -22,7 +22,7 @@
 ```js
 var slider = new CircularSlider({
   container: document.body, // Container/parent HTML element
-  color: #000, // Color of the slider
+  color: '#000', // Color of the slider
   limits: [0, 100], // Lower and upper limit of the slider values
   step: 5, // Should not be 0
   radius: 100, // Should not be 0
