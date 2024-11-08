@@ -103,7 +103,7 @@
       event.preventDefault(); // Cancel dragging on mobile
 
       var src;
-      if (event instanceof TouchEvent) {
+      if (window.TouchEvent && event instanceof TouchEvent) {
         var touches = event.changedTouches;
         for (var i = 0; i < touches.length; i++) {
           var touch = touches[i];
